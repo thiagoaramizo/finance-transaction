@@ -11,6 +11,7 @@ datasource db {
 
 model Transaction {
   id        Int      @id @default(autoincrement())
+  accountId String   @map("account_id")
   amount    Int
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 }
