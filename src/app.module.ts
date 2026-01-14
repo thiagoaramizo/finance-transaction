@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerModule } from 'nestjs-pino';
 import { AppLogger } from './support/app.logger';
+import { PrismaModule } from './infra/db/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AppLogger } from './support/app.logger';
         level: 'trace',
       },
     }),
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppLogger],

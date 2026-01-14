@@ -4,6 +4,8 @@ import { Injectable, Logger } from '@nestjs/common';
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
+  constructor() {}
+
   getHello(): string {
     return 'Hello World!';
   }
