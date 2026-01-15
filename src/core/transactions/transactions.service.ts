@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TransactionRepository } from './transaction.repository';
 import { CreateTransactionDto, TransactionDto } from './transaction.dto';
 import { ConfigService } from '@nestjs/config';
+import { AppErrorConflict } from '../../support/errors/app.error';
 
 @Injectable()
 export class TransactionsService {
@@ -24,7 +25,7 @@ export class TransactionsService {
       lastTransaction.createdAt >
         new Date(Date.now() - this.IDEMPOTENCY_SECONDS * 1000)
     ) {
-      throw new Error('Transaction already exists');
+      throw new AppErrorConflict('Transaction already exists');
     }
   }
 
@@ -35,7 +36,7 @@ export class TransactionsService {
     ]);
 
     if (balance + transaction.amount < 0) {
-      throw new Error('Insufficient balance');
+      throw new AppErrorConflict('Insufficient balance');
     }
 
     // Garantindo uma idempotência

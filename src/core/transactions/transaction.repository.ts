@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/infra/db/prisma/prisma.service';
+import { PrismaService } from '../../infra/db/prisma/prisma.service';
 import { CreateTransactionDto, TransactionDto } from './transaction.dto';
 
 @Injectable()
@@ -7,7 +7,7 @@ export class TransactionRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(transaction: CreateTransactionDto): Promise<TransactionDto> {
-    return this.prisma.transaction.create({
+    return await this.prisma.transaction.create({
       data: transaction,
     });
   }
