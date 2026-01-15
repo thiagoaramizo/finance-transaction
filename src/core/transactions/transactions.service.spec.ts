@@ -8,35 +8,44 @@ jest.mock('../../infra/db/prisma/prisma.service', () => ({
   PrismaService: jest.fn(),
 }));
 
+jest.mock('./transaction.repository', () => {
+  return {
+    TransactionRepository: jest.fn().mockImplementation(() => ({
+      getBalance: jest.fn(),
+      getLastByAccountId: jest.fn(),
+      getAll: jest.fn(),
+      create: jest.fn(),
+    })),
+  };
+});
+
+type TransactionRepositoryMock = {
+  getBalance: jest.Mock;
+  getLastByAccountId: jest.Mock;
+  getAll: jest.Mock;
+  create: jest.Mock;
+};
+
 describe('TransactionsService', () => {
   let service: TransactionsService;
-  let transactionRepository: jest.Mocked<TransactionRepository>;
+  let transactionRepository: TransactionRepositoryMock;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TransactionsService,
         {
-          provide: TransactionRepository,
-          useValue: {
-            getBalance: jest.fn(),
-            getLastByAccountId: jest.fn(),
-            create: jest.fn(),
-          },
-        },
-        {
           provide: ConfigService,
           useValue: {
             get: jest.fn().mockReturnValue(30),
           },
         },
+        TransactionRepository,
       ],
     }).compile();
 
     service = module.get<TransactionsService>(TransactionsService);
-    transactionRepository = module.get<TransactionRepository>(
-      TransactionRepository,
-    ) as jest.Mocked<TransactionRepository>;
+    transactionRepository = module.get(TransactionRepository);
   });
 
   it('deve criar transação quando saldo suficiente e sem idempotência', async () => {
@@ -122,5 +131,28 @@ describe('TransactionsService', () => {
 
     expect(result.id).toBe(2);
     expect(transactionRepository.create).toHaveBeenCalled();
+  });
+
+  it('deve delegar para o repositório no getAll', async () => {
+    const params = {
+      page: 2,
+      take: 10,
+      orderBy: undefined,
+      order: undefined,
+    };
+    const list = [
+      {
+        id: 1,
+        accountId: 'acc-1',
+        amount: 10,
+        createdAt: new Date(),
+      },
+    ];
+    transactionRepository.getAll.mockResolvedValue(list);
+
+    const result = await service.getAll(params as any);
+
+    expect(transactionRepository.getAll).toHaveBeenCalledWith(params);
+    expect(result).toBe(list);
   });
 });

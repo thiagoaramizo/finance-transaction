@@ -1,0 +1,1 @@
+GET http://localhost:3000/transactions?orderBy=id&order=asc&take=2&page=1

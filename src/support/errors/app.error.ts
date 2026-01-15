@@ -21,3 +21,9 @@ export class AppErrorConflict extends AppError {
     return new HttpException(this.message, HttpStatus.CONFLICT);
   }
 }
+
+export class AppErrorInternalServerError extends AppError {
+  toHTTPResponse() {
+    return new HttpException(this.message, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}

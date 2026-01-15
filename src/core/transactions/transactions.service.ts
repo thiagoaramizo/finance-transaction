@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionRepository } from './transaction.repository';
-import { CreateTransactionDto, TransactionDto } from './transaction.dto';
+import {
+  CreateTransactionDto,
+  PageListTransactionDto,
+  TransactionDto,
+} from './transaction.dto';
 import { ConfigService } from '@nestjs/config';
 import { AppErrorConflict } from '../../support/errors/app.error';
 
@@ -45,5 +49,9 @@ export class TransactionsService {
     }
 
     return this.transactionRepository.create(transaction);
+  }
+
+  async getAll(params: PageListTransactionDto): Promise<TransactionDto[]> {
+    return this.transactionRepository.getAll(params);
   }
 }

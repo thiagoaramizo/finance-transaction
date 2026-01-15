@@ -1,23 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../infra/db/prisma/prisma.service';
-import { CreateTransactionDto, TransactionDto } from './transaction.dto';
+import {
+  CreateTransactionDto,
+  OrderEnum,
+  PageListTransactionDto,
+  TransactionDto,
+  TransactionOrderByEnum,
+} from './transaction.dto';
+import { AppErrorInternalServerError } from 'src/support/errors/app.error';
 
 @Injectable()
 export class TransactionRepository {
   constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(TransactionRepository.name);
 
   async create(transaction: CreateTransactionDto): Promise<TransactionDto> {
-    return await this.prisma.transaction.create({
-      data: transaction,
-    });
+    try {
+      return await this.prisma.transaction.create({
+        data: transaction,
+      });
+    } catch (error) {
+      this.logger.debug(`Error on create transaction: ${error.message}`);
+      throw new AppErrorInternalServerError('Error on create transaction');
+    }
   }
 
   async getById(id: number): Promise<TransactionDto | null> {
-    return this.prisma.transaction.findUnique({
-      where: {
-        id,
-      },
-    });
+    try {
+      const transaction = await this.prisma.transaction.findUnique({
+        where: {
+          id,
+        },
+      });
+      return transaction;
+    } catch (error) {
+      this.logger.debug(`Error on get transaction by id: ${error.message}`);
+      return null;
+    }
   }
 
   async getLastByAccountId(accountId: string): Promise<TransactionDto | null> {
@@ -39,8 +58,22 @@ export class TransactionRepository {
     });
   }
 
-  async getAll(): Promise<TransactionDto[]> {
-    return this.prisma.transaction.findMany();
+  async getAll({
+    page,
+    take,
+    ...orderParams
+  }: PageListTransactionDto): Promise<TransactionDto[]> {
+    const skip = page && take ? (page - 1) * take : undefined;
+    const orderBy = orderParams.orderBy || TransactionOrderByEnum.ID;
+    const order = orderParams.order || OrderEnum.DESC;
+
+    return this.prisma.transaction.findMany({
+      take: take ? take : undefined,
+      skip,
+      orderBy: {
+        [orderBy]: order,
+      },
+    });
   }
 
   async getBalance(accountId: string): Promise<number> {
