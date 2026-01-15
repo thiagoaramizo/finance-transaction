@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionsService } from './transactions.service';
-import { TransactionRepository } from './transaction.repository';
+import { TransactionRepository } from '../repositories/transaction.repository';
 import { ConfigService } from '@nestjs/config';
-import { AppErrorConflict } from '../../support/errors/app.error';
+import { AppErrorConflict } from '../../../support/errors/app.error';
 
 jest.mock('../../infra/db/prisma/prisma.service', () => ({
   PrismaService: jest.fn(),

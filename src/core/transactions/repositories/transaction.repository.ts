@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../infra/db/prisma/prisma.service';
+import { PrismaService } from '../../../infra/db/prisma/prisma.service';
 import {
   CreateTransactionDto,
   OrderEnum,
   PageListTransactionDto,
   TransactionDto,
   TransactionOrderByEnum,
-} from './transaction.dto';
+} from '../dto/transaction.dto';
 import { AppErrorInternalServerError } from 'src/support/errors/app.error';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class TransactionRepository {
     }
   }
 
-  async getById(id: number): Promise<TransactionDto | null> {
+  async getById(id: string): Promise<TransactionDto | null> {
     try {
       const transaction = await this.prisma.transaction.findUnique({
         where: {

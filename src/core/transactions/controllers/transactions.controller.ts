@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { TransactionsService } from './transactions.service';
+import { TransactionsService } from '../services/transactions.service';
 import {
   CreateTransactionDto,
   PageListTransactionDto,
   TransactionDto,
-} from './transaction.dto';
+} from '../dto/transaction.dto';
 import {
   ApiCreatedResponse,
   ApiOkResponse,

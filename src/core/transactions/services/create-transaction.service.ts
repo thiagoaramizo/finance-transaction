@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { TransactionRepository } from './transaction.repository';
-import {
-  CreateTransactionDto,
-  PageListTransactionDto,
-  TransactionDto,
-} from './transaction.dto';
+import { TransactionRepository } from '../repositories/transaction.repository';
+import { CreateTransactionDto, TransactionDto } from '../dto/transaction.dto';
 import { ConfigService } from '@nestjs/config';
-import { AppErrorConflict } from '../../support/errors/app.error';
+import { AppErrorConflict } from '../../../support/errors/app.error';
+import { QueueService } from 'src/infra/queue/queue.service';
+import { TransactionErrorEnum } from '../errors/transaction.errors';
 
 @Injectable()
-export class TransactionsService {
+export class CreateTransactionService {
   private IDEMPOTENCY_SECONDS: number;
 
   constructor(
     private transactionRepository: TransactionRepository,
     private configService: ConfigService,
+    private queueService: QueueService,
   ) {
     this.IDEMPOTENCY_SECONDS =
       this.configService.get('IDEMPOTENCY_SECONDS') || 30;
@@ -29,18 +28,18 @@ export class TransactionsService {
       lastTransaction.createdAt >
         new Date(Date.now() - this.IDEMPOTENCY_SECONDS * 1000)
     ) {
-      throw new AppErrorConflict('Transaction already exists');
+      throw new AppErrorConflict(TransactionErrorEnum.IDEMPOTENCY_ERROR);
     }
   }
 
-  async create(transaction: CreateTransactionDto): Promise<TransactionDto> {
+  async execute(transaction: CreateTransactionDto): Promise<TransactionDto> {
     const [balance, lastTransaction] = await Promise.all([
       this.transactionRepository.getBalance(transaction.accountId),
       this.transactionRepository.getLastByAccountId(transaction.accountId),
     ]);
 
     if (balance + transaction.amount < 0) {
-      throw new AppErrorConflict('Insufficient balance');
+      throw new AppErrorConflict(TransactionErrorEnum.INSUFFICIENT_FUNDS);
     }
 
     // Garantindo uma idempotência
@@ -49,9 +48,5 @@ export class TransactionsService {
     }
 
     return this.transactionRepository.create(transaction);
-  }
-
-  async getAll(params: PageListTransactionDto): Promise<TransactionDto[]> {
-    return this.transactionRepository.getAll(params);
   }
 }

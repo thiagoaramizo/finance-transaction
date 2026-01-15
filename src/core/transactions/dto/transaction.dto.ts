@@ -10,9 +10,9 @@ import {
 export class TransactionDto {
   @ApiProperty({
     description: 'Transaction ID',
-    example: 1,
+    example: 'cuid',
   })
-  id: number;
+  id: string;
 
   @ApiProperty({
     description: 'Account ID',
