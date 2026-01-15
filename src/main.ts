@@ -10,6 +10,11 @@ async function bootstrap() {
   // Pino logger
   app.useLogger(app.get(AppLogger));
 
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   // Validation and transform pipe
   app.useGlobalPipes(
     new ValidationPipe({
